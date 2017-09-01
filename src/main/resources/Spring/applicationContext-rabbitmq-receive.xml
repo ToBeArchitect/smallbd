@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xsi:schemaLocation="http://www.springframework.org/schema/rabbit
+	http://www.springframework.org/schema/rabbit/spring-rabbit-1.4.xsd
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.1.xsd">
+
+	<!-- 定义RabbitMQ的连接工厂 -->
+	<rabbit:connection-factory id="connectionFactory"
+		host="${rabbit.ip}" port="${rabbit.port}" username="${rabbit.username}" password="${rabbit.password}"
+		virtual-host="${rabbit.vhost}" />
+
+	<!-- MQ的管理，包括队列、交换器等 -->
+	<rabbit:admin connection-factory="connectionFactory" />
+	
+	<!-- 定义消息队列 -->
+	<rabbit:queue name="walker" auto-declare="true"/>
+
+	<!-- 定义交换机，并且完成队列和交换机的绑定 -->
+	<rabbit:direct-exchange name="amq.direct" auto-declare="true">
+		<rabbit:bindings>
+			<!-- 前台系统只接收商品更新的消息，key路由key -->
+			<rabbit:binding queue="walker" key="test"/>
+		</rabbit:bindings>
+	</rabbit:direct-exchange>
+	
+	<!-- 定义监听 -->
+	<rabbit:listener-container connection-factory="connectionFactory">
+		<!-- 监听一个队列，当队列中有消息，就会自动触发类.方法，传递消息就作为方法的参数，根据方法声明的参数强转 -->
+		<rabbit:listener ref="receiveService" method="receiveMsg" queue-names="walker"/>
+	</rabbit:listener-container>
+
+</beans>

@@ -1,0 +1,26 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+	<!--jredis配置-->
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig" >
+		<!--最大空闲数-->
+		<property name="maxIdle" value="${redis.maxIdle}" />
+		<!--最大建立连接等待时间-->
+		<property name="maxWaitMillis" value="${redis.maxWait}" />
+		<!--是否在从池中取出连接前进行检验,如果检验失败,则从池中去除连接并尝试取出另一个-->
+		<property name="testOnBorrow" value="${redis.testOnBorrow}" />
+		<property name="maxTotal" value="${redis.maxTotal}" />
+		<property name="minIdle" value="${redis.minIdle}" />
+	</bean>
+
+	<bean id="jedisCluster"  class="com.utils.RedisCluster" >
+		<property name="addressConfig">
+			<value>classpath:redis.properties</value>
+		</property>
+		<property name="addressKeyPrefix" value="redis.cluster" />   <!--  属性文件里  key的前缀 -->
+		<property name="timeout" value="${redis.timeout}" />
+		<property name="maxRedirections" value="6" />
+		<property name="genericObjectPoolConfig" ref="poolConfig" />
+	</bean>
+</beans>
